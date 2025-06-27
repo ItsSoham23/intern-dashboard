@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date  
 from collections import defaultdict
 import pandas as pd
 import plotly.express as px
@@ -272,7 +272,40 @@ if st.sidebar.button("🔍 Validate Group Access"):
 
 
 # Enhanced sidebar options
-days = st.sidebar.slider("📅 Analysis Period (days)", 1, 90, 30)
+# days = st.sidebar.slider("📅 Analysis Period (days)", 1, 90, 30)
+
+
+
+
+
+# Date range selection
+st.sidebar.markdown("### 📅 Analysis Date Range")
+col1 = st.sidebar.columns(1)[0]
+with col1:
+    start_date = st.date_input("Start Date", 
+                             datetime.now() - timedelta(days=30),
+                             key="start_date")
+    formatted_start_date = start_date.strftime("%B %d").lstrip("0")
+    st.info(f"{formatted_start_date} -> Today")
+# with col2:
+#     end_date = st.date_input("End Date", 
+#                            datetime.now(),
+#                            key="end_date")
+end_date = datetime.now().date()
+
+# Validate date range
+if start_date > end_date:
+    st.sidebar.error("Error: Start date must be before end date.")
+    st.stop()
+
+# Calculate days for any existing day-based calculations
+days = (end_date - start_date).days
+
+
+
+
+
+
 st.sidebar.markdown("---")
 
 # Filters
@@ -330,8 +363,15 @@ def main():
         st.error("⚠️ Authentication error - please refresh the page")
         return
     
-    since_date = datetime.now() - timedelta(days=days)
+
+
+
+    # since_date = datetime.now() - timedelta(days=days)
     
+    since_date = start_date
+
+
+
     st.info(f"📅 Analyzing activities from {since_date.strftime('%Y-%m-%d')} to {datetime.now().strftime('%Y-%m-%d')}")
     
     # Load group members
@@ -406,7 +446,7 @@ def main():
             if project.get('last_activity_at'):
                 try:
                     last_activity_dt = parse_datetime(project['last_activity_at'])
-                    last_activity = last_activity_dt.strftime('%Y-%m-%d %H:%M')
+                    last_activity = last_activity_dt.strftime('%B %d %H:%M')
                 except:
                     last_activity = project.get('last_activity_at', 'Never')
             
@@ -717,7 +757,7 @@ def main():
             if utc_dt.tzinfo is None:
                 utc_dt = utc_dt.replace(tzinfo=pytz.UTC)
             ist_dt = utc_dt.astimezone(LOCAL_TIMEZONE)
-            last_activity_str = ist_dt.strftime("%Y-%m-%d %H:%M IST")
+            last_activity_str = ist_dt.strftime("%B %d %H:%M IST")
     
     # Calculate days since with proper timezone
             now_ist = datetime.now(LOCAL_TIMEZONE)
@@ -749,7 +789,7 @@ def main():
             "Projects": len(stats["projects"]),
             "Project names": stats["projects"],
 
-            # "Last Activity": last_activity_str,
+            "Last Activity": last_activity_str,
             "Days Since Activity": days_since_activity
         })
     
@@ -820,7 +860,7 @@ def main():
                 "Total Activity": st.column_config.NumberColumn("⚡ Total", width="small"),
                 
                 "Projects": st.column_config.NumberColumn("🗂️ Projects", width="small"),
-                # "Last Activity": st.column_config.TextColumn("🕒 Last Activity", width="medium"),
+                "Last Activity": st.column_config.TextColumn("🕒 Last Activity", width="medium"),
                 "Days Since Activity": st.column_config.TextColumn("📅 Days Ago", width="medium")
             },
         )
