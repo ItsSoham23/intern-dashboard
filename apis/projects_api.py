@@ -1,5 +1,5 @@
 # from turtle import st
-from turtle import st
+import streamlit as st
 from urllib.parse import quote
 from utils.fetch import make_api_request
 import os
