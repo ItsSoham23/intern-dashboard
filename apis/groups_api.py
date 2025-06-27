@@ -1,5 +1,5 @@
 # apis/groups_api.py
-from turtle import st
+import streamlit as st
 from utils.fetch import make_api_request
 from utils.auth import get_gitlab_headers
 from urllib.parse import quote  # noqa: F401
